@@ -7,11 +7,14 @@ on:
 
 jobs:
   macos:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.5.0.app/Contents/Developer || \
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
       - name: Build BrightIntosh Local
         run: |
           xcodebuild \
@@ -19,7 +22,9 @@ jobs:
             -scheme BrightIntosh \
             -configuration Release \
             -derivedDataPath build \
-            -destination 'platform=macOS' \
+            -destination 'platform=macOS,arch=arm64' \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=YES \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             build
