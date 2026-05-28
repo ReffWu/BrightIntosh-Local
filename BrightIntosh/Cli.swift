@@ -18,7 +18,7 @@ import Foundation
 
 @MainActor func statusCli() {
     let status = BrightIntoshSettings.shared.brightintoshActive
-    print("Status: \(status ? "Enabled" : "Disabled")")
+    print("状态：\(status ? "已开启" : "已关闭")")
 }
 
 enum CliCommand: String, CaseIterable {
@@ -34,16 +34,16 @@ func getHelpText() -> String {
     return
 """
 BrightIntosh CLI
-Usage: brightintosh <command> [options]
+用法：brightintosh <command>
 
-Note: This CLI is additional and does require the main app to be running.
+注意：命令行工具需要 BrightIntosh 主程序正在运行。
 
-Commands:
-  enable       Enable BrightIntosh
-  disable      Disable BrightIntosh
-  status       Show current status and brightness
-  toggle       Toggle BrightIntosh on/off
-  help         Show this help message
+命令：
+  enable       开启增强亮度
+  disable      关闭增强亮度
+  status       查看当前状态
+  toggle       切换开启/关闭
+  help         显示帮助
 """
 }
 

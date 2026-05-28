@@ -38,15 +38,7 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
     
     private var remainingTimePoller: Timer?
     
-#if STORE && DEBUG
-    private let titleString = "BrightIntosh SE (v\(appVersion)-dev)"
-#elseif STORE
-    private let titleString = "BrightIntosh SE (v\(appVersion))"
-#elseif DEBUG
-    private let titleString = "BrightIntosh (v\(appVersion)-dev)"
-#else
-    private let titleString = "BrightIntosh (v\(appVersion))"
-#endif
+    private let titleString = "BrightIntosh 本地版"
     
     init(automationManager: AutomationManager, settingsWindowController: SettingsWindowController, toggleBrightIntosh: @escaping () -> ()) {
         self.toggleBrightIntosh = toggleBrightIntosh
@@ -55,7 +47,7 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         self.settingsWindowController = settingsWindowController
         
         menu = NSMenu()
-        menu.title = "BrightIntosh Status Bar Item"
+        menu.title = "BrightIntosh"
         
         super.init()
         
@@ -63,9 +55,10 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         menu.delegate = self
         menu.minimumWidth = 280
         
-        titleItem = NSMenuItem(title: titleString, action: #selector(openWebsite), keyEquivalent: "")
+        titleItem = NSMenuItem(title: titleString, action: nil, keyEquivalent: "")
         titleItem.image = NSImage(named: "LogoLG")
         titleItem.image?.size = CGSize(width: 28, height: 28)
+        titleItem.isEnabled = false
         
         toggleIncreasedBrightnessItem = NSMenuItem(title: "", action: #selector(callToggleBrightIntosh), keyEquivalent: "")
         toggleIncreasedBrightnessItem.setShortcut(for: .toggleBrightIntosh)
@@ -74,19 +67,12 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         toggleTimerItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
         toggleTimerItem.submenu = createTimerDurationSubmenu()
         
-        let settingsItem = NSMenuItem(title: String(localized: "Settings"), action: #selector(openSettings), keyEquivalent: "")
-        settingsItem.image = NSImage(systemSymbolName: "gear", accessibilityDescription: String(localized: "Settings"))
+        let settingsItem = NSMenuItem(title: "设置...", action: #selector(openSettings), keyEquivalent: "")
+        settingsItem.image = NSImage(systemSymbolName: "gear", accessibilityDescription: "设置")
         settingsItem.setShortcut(for: .openSettings)
         settingsItem.target = self
-        
-        let aboutUsItem = NSMenuItem(title: String(localized: "About us"), action: #selector(openLegalNotice), keyEquivalent: "")
-        aboutUsItem.target = self
-        
-        let helpItem = NSMenuItem(title: String(localized: "Help"), action: #selector(openHelp), keyEquivalent: "")
-        helpItem.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: String(localized: "Help"))
-        helpItem.target = self
-        
-        let quitItem = NSMenuItem(title: String(localized: "Quit"), action: #selector(exitBrightIntosh), keyEquivalent: "")
+
+        let quitItem = NSMenuItem(title: "退出 BrightIntosh", action: #selector(exitBrightIntosh), keyEquivalent: "")
         quitItem.target = self
         
         menu.addItem(titleItem)
@@ -96,16 +82,14 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         }
         menu.addItem(NSMenuItem.separator())
         menu.addItem(settingsItem)
-        menu.addItem(helpItem)
-        menu.addItem(aboutUsItem)
         menu.addItem(quitItem)
         
-        unsupportedDeviceItem = NSMenuItem(title: String(localized: "This device is incompatible"), action: nil, keyEquivalent: "")
-        unsupportedDeviceItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "This device is incompatible")
+        unsupportedDeviceItem = NSMenuItem(title: "当前设备不支持增强亮度", action: nil, keyEquivalent: "")
+        unsupportedDeviceItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "当前设备不支持增强亮度")
         menu.addItem(unsupportedDeviceItem)
         
-        trialExpiredItem = NSMenuItem(title: String(localized: "Your trial has expired"), action: nil, keyEquivalent: "")
-        trialExpiredItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Your trial has expired")
+        trialExpiredItem = NSMenuItem(title: "当前不可用", action: nil, keyEquivalent: "")
+        trialExpiredItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "当前不可用")
         trialExpiredItem.isHidden = true
         menu.addItem(trialExpiredItem)
         
@@ -214,12 +198,16 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
     
     private func timerDurationTitle(for minutes: Int) -> String {
         if minutes == 0 {
-            return String(localized: "Never")
+            return "永不"
         }
         if minutes < 60 {
-            return String(format: String(localized: "%d min"), minutes)
+            return "\(minutes) 分钟"
         }
-        return String(format: String(localized: "%.1f h"), Double(minutes) / 60.0)
+        let hours = Double(minutes) / 60.0
+        if hours.rounded(.down) == hours {
+            return "\(Int(hours)) 小时"
+        }
+        return String(format: "%.1f 小时", hours)
     }
     
     private func updateTimerDurationSubmenu() {
@@ -281,7 +269,7 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
     
     private func reconcileHDRCooldownMenuItems() {
         let remainingSeconds = currentHDRCooldownRemainingSeconds()
-        let infoTitle = String(format: String(localized: "Awaiting macOS EDR mode (%llds)"), Int64(remainingSeconds))
+        let infoTitle = "等待 macOS EDR 模式（\(remainingSeconds) 秒）"
         
         guard !hdrCooldownMenuDisplayIds.isEmpty else {
             for item in menu.items where item.tag == Self.hdrCooldownMenuSeparatorTag || item.tag == Self.hdrCooldownMenuInfoTag {
@@ -303,10 +291,8 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         let info = NSMenuItem(title: infoTitle, action: nil, keyEquivalent: "")
         info.tag = Self.hdrCooldownMenuInfoTag
         info.isEnabled = false
-        info.image = NSImage(systemSymbolName: "timer", accessibilityDescription: String(localized: "HDR retry wait"))
-        info.toolTip = String(
-            localized: "BrightIntosh pauses the extra brightness until macOS properly displays HDR content again."
-        )
+        info.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "等待 HDR")
+        info.toolTip = "macOS 重新进入 HDR 显示状态前，BrightIntosh 会暂时延后增强亮度。"
         menu.insertItem(separator, at: titleIdx + 1)
         menu.insertItem(info, at: titleIdx + 2)
     }
@@ -326,11 +312,11 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         }
         
         let appList = incompatibleAppsTitle(incompatibleApps)
-        let infoTitle = String(localized: "Potential conflict: \(appList)")
+        let infoTitle = "可能冲突：\(appList)"
         
         if let info = menu.items.first(where: { $0.tag == Self.incompatibleAppsMenuInfoTag }) {
             info.title = infoTitle
-            info.toolTip = String(localized: "\(appList) may also control display brightness or color and interfere with BrightIntosh.")
+            info.toolTip = "\(appList) 可能也在控制显示器亮度或颜色，会影响 BrightIntosh。"
             return
         }
         
@@ -342,8 +328,8 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         let info = NSMenuItem(title: infoTitle, action: nil, keyEquivalent: "")
         info.tag = Self.incompatibleAppsMenuInfoTag
         info.isEnabled = false
-        info.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: String(localized: "Potential conflict"))
-        info.toolTip = String(localized: "\(appList) may also control display brightness or color and interfere with BrightIntosh.")
+        info.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "可能冲突")
+        info.toolTip = "\(appList) 可能也在控制显示器亮度或颜色，会影响 BrightIntosh。"
         menu.insertItem(separator, at: titleIdx + 1)
         menu.insertItem(info, at: titleIdx + 2)
     }
@@ -357,12 +343,12 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
         guard let statusItem else { return }
         
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: BrightIntoshSettings.shared.brightintoshActive ? "sun.max.circle.fill" : "sun.max.circle", accessibilityDescription: BrightIntoshSettings.shared.brightintoshActive ? "Increased brightness" : "Default brightness")
+            button.image = NSImage(systemSymbolName: BrightIntoshSettings.shared.brightintoshActive ? "sun.max.circle.fill" : "sun.max.circle", accessibilityDescription: BrightIntoshSettings.shared.brightintoshActive ? "增强亮度已开启" : "增强亮度已关闭")
             button.toolTip = titleString
         }
         
-        toggleIncreasedBrightnessItem.title = BrightIntoshSettings.shared.brightintoshActive ? String(localized: "Deactivate") : String(localized: "Activate")
-        toggleTimerItem.title = BrightIntoshSettings.shared.timerAutomation ? String(localized: "Disable after") : String(localized: "Enable Timer")
+        toggleIncreasedBrightnessItem.title = BrightIntoshSettings.shared.brightintoshActive ? "关闭增强亮度" : "开启增强亮度"
+        toggleTimerItem.title = BrightIntoshSettings.shared.timerAutomation ? "定时关闭" : "设置定时关闭"
         updateTimerDurationSubmenu()
         if #available(macOS 14, *), !BrightIntoshSettings.shared.timerAutomation {
             toggleTimerItem.badge = nil
@@ -420,18 +406,6 @@ class StatusBarMenu : NSObject, NSMenuDelegate {
             BrightIntoshSettings.shared.timerAutomationTimeout = minutes
             BrightIntoshSettings.shared.timerAutomation = true
         }
-    }
-    
-    @objc func openWebsite() {
-        NSWorkspace.shared.open(BrightIntoshUrls.web)
-    }
-    
-    @objc func openHelp() {
-        NSWorkspace.shared.open(BrightIntoshUrls.help)
-    }
-    
-    @objc func openLegalNotice() {
-        NSWorkspace.shared.open(BrightIntoshUrls.legal)
     }
     
     func startRemainingTimePoller() {

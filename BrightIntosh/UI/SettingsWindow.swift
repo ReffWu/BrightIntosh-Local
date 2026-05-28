@@ -7,44 +7,30 @@
 
 import KeyboardShortcuts
 import CoreGraphics
-import OSLog
 import SwiftUI
 
 @MainActor
 class BasicSettingsViewModel: ObservableObject {
-    /*
-     This View Model is used for settings that can be changed via shortcuts or another way other than the settings UI, so changes can be obeserved and showed in the UI.
-     */
     private var brightIntoshActive = BrightIntoshSettings.shared.brightintoshActive
     var brightIntoshActiveToggle: Bool {
         set { BrightIntoshSettings.shared.brightintoshActive = newValue }
-        get { return brightIntoshActive }
-    }
-    private var batteryAutomation = BrightIntoshSettings.shared.batteryAutomation
-    var batteryAutomationToggle: Bool {
-        set { BrightIntoshSettings.shared.batteryAutomation = newValue }
-        get { return batteryAutomation }
+        get { brightIntoshActive }
     }
 
     private var timerAutomation = BrightIntoshSettings.shared.timerAutomation
-    var timerAutomationToggle: Bool {
-        set { BrightIntoshSettings.shared.timerAutomation = newValue }
-        get { return timerAutomation }
-    }
-    
     private var timerAutomationTimeoutValue = BrightIntoshSettings.shared.timerAutomationTimeout
     var timerAutomationTimeout: Int {
         set {
             BrightIntoshSettings.shared.timerAutomation = newValue > 0
             BrightIntoshSettings.shared.timerAutomationTimeout = newValue
         }
-        get { return timerAutomationToggle ? timerAutomationTimeoutValue : 0 }
+        get { timerAutomation ? timerAutomationTimeoutValue : 0 }
     }
-    
+
     private var powerAdapterAutomation = BrightIntoshSettings.shared.powerAdapterAutomation
     var powerAdapterAutomationToggle: Bool {
         set { BrightIntoshSettings.shared.powerAdapterAutomation = newValue }
-        get { return powerAdapterAutomation }
+        get { powerAdapterAutomation }
     }
 
     init() {
@@ -54,12 +40,6 @@ class BasicSettingsViewModel: ObservableObject {
             }
             if self.brightIntoshActive != BrightIntoshSettings.shared.brightintoshActive {
                 self.brightIntoshActive = BrightIntoshSettings.shared.brightintoshActive
-                self.objectWillChange.send()
-            }
-        }
-        BrightIntoshSettings.shared.addListener(setting: "batteryAutomation") {
-            if self.batteryAutomation != BrightIntoshSettings.shared.batteryAutomation {
-                self.batteryAutomation = BrightIntoshSettings.shared.batteryAutomation
                 self.objectWillChange.send()
             }
         }
@@ -84,134 +64,109 @@ class BasicSettingsViewModel: ObservableObject {
     }
 }
 
-struct BrightnessSliderRemovalHint: View {
-    @Binding var isVisible: Bool
+private struct SettingsInfoRow: View {
+    var symbolName: String = "info.circle"
+    var text: String
 
     var body: some View {
-        if isVisible {
-            HStack(alignment: .top, spacing: 8) {
-                Image(systemName: "info.circle.fill")
-                    .foregroundStyle(.blue)
-                Text("The BrightIntosh brightness slider was removed. Use your Mac's normal brightness keys to adjust brightness, and simply toggle increased brightness on or off when you need the boost.")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Button("Dismiss") {
-                    BrightIntoshSettings.shared.dismissedBrightnessSliderRemovalHint = true
-                    isVisible = false
-                }
-                .buttonStyle(.borderless)
-            }
-            .padding(10)
-            .background(Color.blue.opacity(0.12))
-            .clipShape(.rect(cornerRadius: 8))
-        }
+        Label(text, systemImage: symbolName)
+            .font(.callout)
+            .foregroundStyle(.secondary)
     }
 }
 
-struct CliInstallationSheet: View {
+private struct CliInstallationSheet: View {
     @Binding var isPresented: Bool
-    
+
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Install the BrightIntosh CLI")
-                .font(.title)
-            HStack {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("安装命令行工具")
+                .font(.title2)
+                .bold()
+
+            Text("复制下面的命令到终端运行。之后可以用 `brightintosh status`、`brightintosh enable`、`brightintosh disable` 控制本地 App。")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 10) {
                 Text(getCliInstallCommand())
                     .textSelection(.enabled)
-                    .font(.caption)
-                    .monospaced()
+                    .font(.system(.caption, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 Button(action: copyToClipboard) {
                     Image(systemName: "document.on.document")
                 }
+                .help("复制命令")
             }
-                .frame(maxWidth: .infinity)
-                .padding(10)
-                .background(Color.black)
-                .foregroundStyle(.white)
-                .clipShape(.rect(cornerRadius: 15.0))
-            Text("Help")
-                .font(.title2)
-            Text(getHelpText())
-                .monospaced()
-                .font(.caption)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(10)
-                .background(Color.black)
-                .foregroundStyle(.white)
-                .clipShape(.rect(cornerRadius: 15.0))
+            .padding(10)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+
             HStack {
                 Spacer()
-                Button("Done") {
+                Button("完成") {
                     isPresented = false
                 }
                 .keyboardShortcut(.defaultAction)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight:    .infinity)
-            .padding()
-            .navigationBarBackButtonHidden(false)
+        .padding(24)
+        .frame(width: 520)
     }
-    
-    func copyToClipboard() {
+
+    private func copyToClipboard() {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(getCliInstallCommand(), forType: .string)
     }
-    
-    func getCliInstallCommand() -> String {
+
+    private func getCliInstallCommand() -> String {
         let bundlePath = Bundle.main.bundlePath
         return "echo \"alias brightintosh='\(bundlePath)/Contents/Resources/cli.sh'\" >> ~/.zshrc && source ~/.zshrc"
     }
 }
 
-struct AdvancedSettingsSheet: View {
+private struct AdvancedSettingsSheet: View {
     @Binding var isPresented: Bool
     @Binding var useAlternateBrightnessBackend: Bool
     @Binding var waitForHDRBeforeIncreasingBrightness: Bool
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Advanced")
+            Text("高级设置")
                 .font(.title2)
                 .bold()
-            
-            VStack(alignment: .leading, spacing: 12) {
-                Toggle(
-                    "Use alternate brightness backend",
-                    isOn: $useAlternateBrightnessBackend
-                )
+
+            Toggle("使用备用亮度后端", isOn: $useAlternateBrightnessBackend)
                 .onChange(of: useAlternateBrightnessBackend) { _, new in
                     BrightIntoshSettings.shared.useAlternateBrightnessBackend = new
                 }
-                
-                Toggle(
-                    "Wait for HDR before increasing brightness",
-                    isOn: $waitForHDRBeforeIncreasingBrightness
-                )
+
+            Toggle("等待 HDR 模式就绪后再增强亮度", isOn: $waitForHDRBeforeIncreasingBrightness)
                 .onChange(of: waitForHDRBeforeIncreasingBrightness) { _, new in
                     BrightIntoshSettings.shared.waitForHDRBeforeIncreasingBrightness = new
                 }
-                
-                Text("These options can help with display-specific brightness issues.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            
+
+            Text("这些选项主要用于处理特定显示器或系统版本上的亮度兼容问题。正常情况下保持默认即可。")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+
             HStack {
                 Spacer()
-                Button("Done") {
+                Button("完成") {
                     isPresented = false
                 }
                 .keyboardShortcut(.defaultAction)
             }
         }
-        .padding()
-        .frame(width: 420)
+        .padding(24)
+        .frame(width: 440)
     }
 }
 
 struct BasicSettings: View {
-    @ObservedObject var viewModel = BasicSettingsViewModel()
-    
+    @StateObject private var viewModel = BasicSettingsViewModel()
+
     @State private var showInDock = BrightIntoshSettings.shared.showInDock
     @State private var hideMenuBarItem = BrightIntoshSettings.shared.hideMenuBarItem
     @State private var launchOnLogin = BrightIntoshSettings.shared.launchAtLogin
@@ -222,306 +177,183 @@ struct BasicSettings: View {
     @State private var useAlternateBrightnessBackend = BrightIntoshSettings.shared.useAlternateBrightnessBackend
     @State private var waitForHDRBeforeIncreasingBrightness = BrightIntoshSettings.shared.waitForHDRBeforeIncreasingBrightness
     @State private var batteryLevelThreshold = BrightIntoshSettings.shared.batteryAutomationThreshold
-    @State private var timerAutomationTimeout = BrightIntoshSettings.shared.timerAutomationTimeout
 
-    @State private var entitledToUnrestrictedUse = false
-    @Environment(\.isUnrestrictedUser) private var isUnrestrictedUser: Bool
-    
     @State private var showCliPopup = false
-    @State private var showBrightnessSliderRemovalHint = false
     @State private var showAdvancedSettingsSheet = false
 
     var body: some View {
-        ScrollView {
-            Form {
-                Section(header: Text("Brightness").bold()) {
-                    BrightnessSliderRemovalHint(isVisible: $showBrightnessSliderRemovalHint)
-                    Toggle("Increased brightness", isOn: $viewModel.brightIntoshActiveToggle)
-                    if isDeviceSupported() {
-                        Toggle(
-                            "Don't apply increased brightness to external XDR displays",
-                            isOn: $brightIntoshOnlyOnBuiltIn
-                        )
+        Form {
+            Section("亮度") {
+                Toggle("增强亮度", isOn: $viewModel.brightIntoshActiveToggle)
+
+                if isDeviceSupported() {
+                    Toggle("只增强内建 XDR 显示屏", isOn: $brightIntoshOnlyOnBuiltIn)
                         .onChange(of: brightIntoshOnlyOnBuiltIn) { _, new in
                             BrightIntoshSettings.shared.brightIntoshOnlyOnBuiltIn = new
                         }
-                    } else {
-                        Label(
-                            "Your device doesn't have a built-in XDR display. Increased brightness can only be enabled for external XDR displays.",
-                            systemImage: "exclamationmark.triangle.fill"
-                        ).foregroundColor(Color.yellow)
-                    }
-                    Toggle(
-                        "Show a notice when boosted brightness needs a short delay",
-                        isOn: $showHDRRetryCooldownNotice
+                } else {
+                    SettingsInfoRow(
+                        symbolName: "exclamationmark.triangle.fill",
+                        text: "这台 Mac 没有内建 XDR 显示屏，只能对外接 XDR 显示器启用增强亮度。"
                     )
+                    .foregroundStyle(.yellow)
+                }
+
+                Toggle("需要等待 HDR 时显示提示", isOn: $showHDRRetryCooldownNotice)
                     .onChange(of: showHDRRetryCooldownNotice) { _, new in
                         BrightIntoshSettings.shared.showHDRRetryCooldownNotice = new
                     }
-                    Toggle(
-                        "Show a notice when another brightness app may interfere",
-                        isOn: $showIncompatibleAppsNotice
-                    )
+
+                Toggle("检测到亮度类 App 冲突时显示提示", isOn: $showIncompatibleAppsNotice)
                     .onChange(of: showIncompatibleAppsNotice) { _, new in
                         BrightIntoshSettings.shared.showIncompatibleAppsNotice = new
                     }
-                    Button("Restore display color settings") {
-                        BrightIntoshSettings.shared.brightintoshActive = false
-                        CGDisplayRestoreColorSyncSettings()
-                    }
+
+                Button("恢复显示颜色设置") {
+                    BrightIntoshSettings.shared.brightintoshActive = false
+                    CGDisplayRestoreColorSyncSettings()
                 }
-                Section(header: Text("Timer").bold()) {
-                    Picker(selection: $viewModel.timerAutomationTimeout, label: Text("Disable after")) {
-                        Text("Never").tag(0)
-                        ForEach(Array(stride(from: 10, to: 51, by: 10)), id: \.self) {
-                            minutes in
-                            Text("\(minutes) min").tag(minutes)
-                        }
-                        ForEach(Array(stride(from: 1, to: 5, by: 0.5)), id: \.self) { hours in
-                            Text(String(format: "%.1f h", hours)).tag(Int(hours * 60))
-                        }
-                    }
-                    .onChange(of: timerAutomationTimeout) { _, new in
-                        viewModel.timerAutomationTimeout = new
-                    }
-                }
-                Section(header: Text("Automations").bold()) {
-                    Toggle("Launch on login", isOn: $launchOnLogin)
-                        .onChange(of: launchOnLogin) { _, new in
-                            BrightIntoshSettings.shared.launchAtLogin = new
-                        }
-                    Toggle("Disable when the MacBook lid is closed", isOn: $disableWhenLidClosed)
-                        .onChange(of: disableWhenLidClosed) { _, new in
-                            BrightIntoshSettings.shared.disableWhenLidClosed = new
-                        }
-                    Picker(selection: $batteryLevelThreshold, label: Text("Disable when battery level drops under")) {
-                        Text("Never").tag(100)
-                        ForEach(Array(stride(from: 5, to: 100, by: 5)), id: \.self) {
-                            percent in
-                            Text("\(percent) %").tag(percent)
-                        }
-                    }
-                    .onChange(of: batteryLevelThreshold) { _, new in
-                        BrightIntoshSettings.shared.batteryAutomation = batteryLevelThreshold != 100
-                        BrightIntoshSettings.shared.batteryAutomationThreshold = new
-                    }
-                    Toggle(
-                        "Disable when on battery, enable when plugged in",
-                        isOn: $viewModel.powerAdapterAutomationToggle)
-                }
-                Section(header: Text("Shortcuts").bold()) {
-                    KeyboardShortcuts.Recorder(
-                        "Toggle increased brightness:", name: .toggleBrightIntosh)
-                    KeyboardShortcuts.Recorder(
-                        "Open settings:", name: .openSettings)
-                }
-                Section(
-                    header: Text("General").bold(),
-                    footer: HStack {
-                        Spacer()
-                        Button("Advanced...") {
-                            showAdvancedSettingsSheet = true
-                        }
-                        .sheet(isPresented: $showAdvancedSettingsSheet) {
-                            AdvancedSettingsSheet(
-                                isPresented: $showAdvancedSettingsSheet,
-                                useAlternateBrightnessBackend: $useAlternateBrightnessBackend,
-                                waitForHDRBeforeIncreasingBrightness: $waitForHDRBeforeIncreasingBrightness
-                            )
-                        }
-                    },
-                    content: {
-                        Toggle(
-                            "Hide menu bar item",
-                            isOn: $hideMenuBarItem)
-                        .onChange(of: hideMenuBarItem) { _, new in
-                            BrightIntoshSettings.shared.hideMenuBarItem = new
-                        }
-                        if hideMenuBarItem {
-                            Label(
-                                "To open the settings window without the menu bar item, search for \"BrightIntosh Settings\" in the the macOS \(Image(systemName: "magnifyingglass")) Spotlight search.",
-                                systemImage: "exclamationmark.triangle.fill"
-                            ).foregroundColor(Color.yellow)
-                        }
-                        Toggle(
-                            "Show in dock",
-                            isOn: $showInDock)
-                        .onChange(of: showInDock) { _, new in
-                            BrightIntoshSettings.shared.showInDock = new
-                        }
-                        Button(action: {
-                            Task {
-                                let report = await generateReport()
-                                let pasteboard = NSPasteboard.general
-                                pasteboard.declareTypes([.string], owner: nil)
-                                pasteboard.setString(report, forType: .string)
-                            }
-                        }) {
-                            Text("Generate and copy report")
-                        }
-                        Button(action: {
-                            showCliPopup = true
-                        }) {
-                            Text("Install BrightIntosh CLI")
-                        }
-                    })
-#if DEBUG
-                Section(header: Text("Dev").bold()) {
-                    Button("Reset brightness slider hint dismissal") {
-                        BrightIntoshSettings.shared.dismissedBrightnessSliderRemovalHint = false
-                        Task {
-                            await updateBrightnessSliderRemovalHintVisibility()
-                        }
-                    }
-                }
-                .background(.clear)
-#endif
+                .help("关闭增强亮度，并让 macOS 恢复当前显示器的 ColorSync 设置")
             }
+
+            Section("定时") {
+                Picker("自动关闭", selection: $viewModel.timerAutomationTimeout) {
+                    Text("永不").tag(0)
+                    ForEach(Array(stride(from: 10, to: 51, by: 10)), id: \.self) { minutes in
+                        Text("\(minutes) 分钟").tag(minutes)
+                    }
+                    ForEach([60, 90, 120, 150, 180, 210, 240, 270], id: \.self) { minutes in
+                        Text(timerTitle(for: minutes)).tag(minutes)
+                    }
+                }
+            }
+
+            Section("自动化") {
+                Toggle("登录时启动", isOn: $launchOnLogin)
+                    .onChange(of: launchOnLogin) { _, new in
+                        BrightIntoshSettings.shared.launchAtLogin = new
+                    }
+
+                Toggle("合上 MacBook 屏幕后关闭", isOn: $disableWhenLidClosed)
+                    .onChange(of: disableWhenLidClosed) { _, new in
+                        BrightIntoshSettings.shared.disableWhenLidClosed = new
+                    }
+
+                Picker("电量低于", selection: $batteryLevelThreshold) {
+                    Text("不自动关闭").tag(100)
+                    ForEach(Array(stride(from: 5, to: 100, by: 5)), id: \.self) { percent in
+                        Text("\(percent)%").tag(percent)
+                    }
+                }
+                .onChange(of: batteryLevelThreshold) { _, new in
+                    BrightIntoshSettings.shared.batteryAutomation = new != 100
+                    BrightIntoshSettings.shared.batteryAutomationThreshold = new
+                }
+
+                Toggle("使用电池时关闭，接入电源后恢复", isOn: $viewModel.powerAdapterAutomationToggle)
+            }
+
+            Section("快捷键") {
+                KeyboardShortcuts.Recorder("切换增强亮度：", name: .toggleBrightIntosh)
+                KeyboardShortcuts.Recorder("打开设置：", name: .openSettings)
+            }
+
+            Section("界面") {
+                Toggle("隐藏菜单栏图标", isOn: $hideMenuBarItem)
+                    .onChange(of: hideMenuBarItem) { _, new in
+                        BrightIntoshSettings.shared.hideMenuBarItem = new
+                    }
+
+                if hideMenuBarItem {
+                    SettingsInfoRow(
+                        symbolName: "exclamationmark.triangle.fill",
+                        text: "隐藏后，可在 Spotlight 搜索“BrightIntosh 设置”重新打开设置窗口。"
+                    )
+                    .foregroundStyle(.yellow)
+                }
+
+                Toggle("在程序坞中显示", isOn: $showInDock)
+                    .onChange(of: showInDock) { _, new in
+                        BrightIntoshSettings.shared.showInDock = new
+                    }
+            }
+
+            Section("本地工具") {
+                Button("复制诊断报告") {
+                    Task {
+                        let report = await generateReport()
+                        let pasteboard = NSPasteboard.general
+                        pasteboard.declareTypes([.string], owner: nil)
+                        pasteboard.setString(report, forType: .string)
+                    }
+                }
+
+                Button("安装命令行工具...") {
+                    showCliPopup = true
+                }
+            }
+
+            Section("高级") {
+                Button("高级设置...") {
+                    showAdvancedSettingsSheet = true
+                }
+            }
+
+#if DEBUG
+            Section("开发") {
+                Text("本地调试构建")
+                    .foregroundStyle(.secondary)
+            }
+#endif
         }
         .formStyle(.grouped)
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
         .sheet(isPresented: $showCliPopup) {
             CliInstallationSheet(isPresented: $showCliPopup)
         }
-        .task {
-            await updateBrightnessSliderRemovalHintVisibility()
+        .sheet(isPresented: $showAdvancedSettingsSheet) {
+            AdvancedSettingsSheet(
+                isPresented: $showAdvancedSettingsSheet,
+                useAlternateBrightnessBackend: $useAlternateBrightnessBackend,
+                waitForHDRBeforeIncreasingBrightness: $waitForHDRBeforeIncreasingBrightness
+            )
         }
     }
 
-    @MainActor
-    private func updateBrightnessSliderRemovalHintVisibility() async {
-        guard !BrightIntoshSettings.shared.dismissedBrightnessSliderRemovalHint else {
-            showBrightnessSliderRemovalHint = false
-            return
+    private func timerTitle(for minutes: Int) -> String {
+        if minutes < 60 {
+            return "\(minutes) 分钟"
         }
-
-        showBrightnessSliderRemovalHint = await originalPurchaseVersionIsEarlierThan(brightnessSliderRemovalOriginalPurchaseVersionCutoff)
-    }
-}
-
-struct Acknowledgments: View {
-    var body: some View {
-        VStack(alignment: HorizontalAlignment.leading) {
-            ScrollView {
-                ForEach(acknowledgments) { ack in
-                    Text(ack.title).font(.title2)
-                    Text(ack.text)
-                }
-            }
-        }.frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        ).padding()
-    }
-}
-
-struct VersionView: View {
-    #if STORE
-        var title: String = "BrightIntosh SE v\(appVersion)"
-        @Environment(\.isUnrestrictedUser) private var isUnrestrictedUser: Bool
-    #else
-        var title: String = "BrightIntosh v\(appVersion)"
-        private let isUnrestrictedUser: Bool = true
-    #endif
-
-    @State var clicks = 0
-
-    @State var ignoreAppTransaction = BrightIntoshSettings.shared.ignoreAppTransaction
-
-    var body: some View {
-        VStack {
-            Label(title + (isUnrestrictedUser ? "" : " - Free Trial"), image: "LogoBordered")
-                .imageScale(.small)
-                .onTapGesture {
-                    clicks += 1
-                }
-            HStack {
-                Button(
-                    action: {
-                        NSWorkspace.shared.open(BrightIntoshUrls.help)
-                    },
-                    label: {
-                        Image(systemName: "questionmark.circle")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 16, height: 16)
-                            .padding(4.0)
-                    }
-                )
-                .help("Help")
-                Button(action: {
-                    NSWorkspace.shared.open(BrightIntoshUrls.twitter)
-                }) {
-                    Image("X")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 16, height: 16)
-                        .padding(4.0)
-                }
-                .help("X / Twitter")
-            }
+        let hours = Double(minutes) / 60.0
+        if hours.rounded(.down) == hours {
+            return "\(Int(hours)) 小时"
         }
-        #if STORE
-            if clicks >= 5 {
-                VStack {
-                    Text("Test Settings").font(.title2)
-                    Toggle(isOn: $ignoreAppTransaction) {
-                        Text("Test: Ignore App Transaction")
-                    }
-                    .onChange(of: ignoreAppTransaction) {
-                        BrightIntoshSettings.shared.ignoreAppTransaction = ignoreAppTransaction
-                        Task {
-                            _ = try? await EntitlementHandler.shared.isUnrestrictedUser()
-                        }
-                    }
-                    Button("Hide") {
-                        clicks = 0
-                    }
-                }
-            }
-        #endif
+        return String(format: "%.1f 小时", hours)
     }
 }
 
-struct SettingsTabs: View {
-    @Environment(\.isUnrestrictedUser) private var isUnrestrictedUser: Bool
-
+private struct LocalEditionFooter: View {
     var body: some View {
-        TabView {
-            #if STORE
-                if !isUnrestrictedUser {
-                    BrightIntoshStoreView(showTrialExpiredWarning: true).tabItem {
-                        Text("Store")
-                    }
-                }
-            #endif
-            BasicSettings().tabItem {
-                Text("General")
-            }
-            Acknowledgments().tabItem {
-                Text("Acknowledgments")
-            }
+        HStack(spacing: 6) {
+            Image("LogoBordered")
+                .resizable()
+                .frame(width: 16, height: 16)
+            Text("BrightIntosh 本地版 \(appVersion)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }
 
 struct SettingsView: View {
     var body: some View {
-        VStack {
+        VStack(spacing: 8) {
             if #unavailable(macOS 15) {
-                Text("Settings").font(.largeTitle)
+                Text("设置")
+                    .font(.largeTitle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            SettingsTabs()
-            VersionView()
+            BasicSettings()
+            LocalEditionFooter()
         }
         .padding()
         .userStatusTask()
@@ -531,22 +363,21 @@ struct SettingsView: View {
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
         SettingsView()
-            .frame(width: 650, height: 590)
+            .frame(width: 660, height: 620)
     }
 }
 
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     init() {
-
         let settingsWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 650, height: 590),
+            contentRect: NSRect(x: 0, y: 0, width: 660, height: 620),
             styleMask: [.titled, .closable, .unifiedTitleAndToolbar],
             backing: .buffered,
             defer: false
         )
-        settingsWindow.title = "BrightIntosh Settings"
+        settingsWindow.title = "BrightIntosh 设置"
 
-        let contentView = SettingsView().frame(width: 650, height: 590)
+        let contentView = SettingsView().frame(width: 660, height: 620)
 
         settingsWindow.contentView = NSHostingView(rootView: contentView)
         settingsWindow.center()

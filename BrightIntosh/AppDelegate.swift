@@ -59,10 +59,9 @@ class BrightIntoshAppDelegate: NSObject {
     
     func addSettingsToIndex() {
         let attributeSet = CSSearchableItemAttributeSet(contentType: UTType.application)
-        attributeSet.title = NSLocalizedString("BrightIntosh Settings", comment: "")
-        attributeSet.contentDescription = "Open the settings of BrightIntosh"
-        attributeSet.thumbnailData = URL(string: "https://brightintosh.de/brightintosh_sm.png")!.dataRepresentation
-        attributeSet.alternateNames = ["BrightIntosh Settings", "BrightIntosh", "Settings", "brightness"]
+        attributeSet.title = "BrightIntosh 设置"
+        attributeSet.contentDescription = "打开 BrightIntosh 设置"
+        attributeSet.alternateNames = ["BrightIntosh 设置", "BrightIntosh", "设置", "亮度"]
 
         let item = CSSearchableItem(uniqueIdentifier: "local.reff.brightintosh.settings", domainIdentifier: "local.reff.brightintosh", attributeSet: attributeSet)
         
@@ -189,8 +188,8 @@ extension BrightIntoshAppDelegate: NSApplicationDelegate {
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
         let menu = NSMenu(title: "BrightIntosh")
         
-        let settingsItem = NSMenuItem(title: String(localized: "Settings"), action: #selector(openSettings), keyEquivalent: "")
-        settingsItem.image = NSImage(systemSymbolName: "gear", accessibilityDescription: String(localized: "Settings"))
+        let settingsItem = NSMenuItem(title: "设置...", action: #selector(openSettings), keyEquivalent: "")
+        settingsItem.image = NSImage(systemSymbolName: "gear", accessibilityDescription: "设置")
         menu.addItem(settingsItem)
         
         return menu

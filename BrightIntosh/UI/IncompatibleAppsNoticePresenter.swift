@@ -94,9 +94,7 @@ final class IncompatibleAppsNoticePresenter {
     
     private func presentToast(apps: [IncompatibleRunningApp], statusItem: NSStatusItem?) -> Bool {
         let appList = incompatibleAppsTitle(apps)
-        let message = String(
-            localized: "\(appList) may interfere with BrightIntosh because it can also adjust display brightness or color."
-        )
+        let message = "\(appList) 也可能调节显示器亮度或颜色，可能会影响 BrightIntosh。"
         let font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
         let panelWidth: CGFloat = 280
         let horizontalPadding: CGFloat = 14
@@ -167,7 +165,7 @@ final class IncompatibleAppsNoticePresenter {
         }
         
         let symbolConfig = NSImage.SymbolConfiguration(pointSize: iconSide - 2, weight: .medium)
-        let warningImage = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: String(localized: "Potential conflict"))?
+        let warningImage = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "可能冲突")?
             .withSymbolConfiguration(symbolConfig)
         let iconView = NSImageView()
         iconView.image = warningImage
@@ -188,7 +186,7 @@ final class IncompatibleAppsNoticePresenter {
         label.setContentCompressionResistancePriority(.required, for: .vertical)
         
         let closeConfig = NSImage.SymbolConfiguration(pointSize: 11, weight: .medium)
-        let closeImage = NSImage(systemSymbolName: "xmark", accessibilityDescription: String(localized: "Dismiss notice"))?
+        let closeImage = NSImage(systemSymbolName: "xmark", accessibilityDescription: "关闭提示")?
             .withSymbolConfiguration(closeConfig)
         let closeButton = NSButton()
         closeButton.image = closeImage
@@ -199,7 +197,7 @@ final class IncompatibleAppsNoticePresenter {
         closeButton.contentTintColor = .secondaryLabelColor
         closeButton.target = self
         closeButton.action = #selector(closeClicked(_:))
-        closeButton.toolTip = String(localized: "Click to dismiss.")
+        closeButton.toolTip = "点击关闭。"
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         
         effect.addSubview(iconView)

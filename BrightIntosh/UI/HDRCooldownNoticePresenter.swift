@@ -15,9 +15,7 @@ final class HDRCooldownNoticePresenter {
     func present(cooldownSeconds: Int, displayID: CGDirectDisplayID?, statusItem: NSStatusItem?) {
         guard BrightIntoshSettings.shared.showHDRRetryCooldownNotice else { return }
         
-        let message = String(
-            localized: "macOS is temporarily limiting the display's maximum brightness. Brightintosh will restore the boost in approx. \(cooldownSeconds) seconds once the system allows it."
-        )
+        let message = "macOS 正在临时限制显示器最高亮度。系统允许后，BrightIntosh 会在约 \(cooldownSeconds) 秒内恢复增强亮度。"
         let font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize)
         let panelWidth: CGFloat = 280
         let horizontalPadding: CGFloat = 14
@@ -88,7 +86,7 @@ final class HDRCooldownNoticePresenter {
         }
         
         let symbolConfig = NSImage.SymbolConfiguration(pointSize: iconSide - 2, weight: .medium)
-        let timerImage = NSImage(systemSymbolName: "timer", accessibilityDescription: String(localized: "Short wait"))?
+        let timerImage = NSImage(systemSymbolName: "timer", accessibilityDescription: "短暂等待")?
             .withSymbolConfiguration(symbolConfig)
         let iconView = NSImageView()
         iconView.image = timerImage
@@ -109,7 +107,7 @@ final class HDRCooldownNoticePresenter {
         label.setContentCompressionResistancePriority(.required, for: .vertical)
         
         let closeConfig = NSImage.SymbolConfiguration(pointSize: 11, weight: .medium)
-        let closeImage = NSImage(systemSymbolName: "xmark", accessibilityDescription: String(localized: "Dismiss notice"))?
+        let closeImage = NSImage(systemSymbolName: "xmark", accessibilityDescription: "关闭提示")?
             .withSymbolConfiguration(closeConfig)
         let closeButton = ToastCloseButton()
         closeButton.menuTarget = self
@@ -121,9 +119,7 @@ final class HDRCooldownNoticePresenter {
         closeButton.contentTintColor = .secondaryLabelColor
         closeButton.target = self
         closeButton.action = #selector(closeClicked(_:))
-        closeButton.toolTip = String(
-            localized: "Click to dismiss. Option-click to dismiss and stop showing these notices. Control-click for a menu."
-        )
+        closeButton.toolTip = "点击关闭。按住 Option 点击可关闭并不再显示；按住 Control 点击可打开菜单。"
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         
         effect.addSubview(iconView)
@@ -221,7 +217,7 @@ private final class ToastCloseButton: NSButton {
         }
         let menu = NSMenu()
         let item = NSMenuItem(
-            title: String(localized: "Don’t show this notice again"),
+            title: "不再显示此提示",
             action: #selector(HDRCooldownNoticePresenter.disableFromContextMenu(_:)),
             keyEquivalent: ""
         )

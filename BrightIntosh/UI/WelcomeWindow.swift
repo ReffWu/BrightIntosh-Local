@@ -10,184 +10,96 @@ import SwiftUI
 struct IntroView: View {
     var supportedDevice: Bool = false
     var onAccept: () -> Void
-    
-    @Environment(\.isUnrestrictedUser) private var isUnrestrictedUser: Bool
-    
+
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .center, spacing: 10.0) {
-                    VStack(alignment: .leading, spacing: 10.0) {
-                        if !supportedDevice {
-                            VStack {
-                                Label(
-                                    title: {
-                                        Text("Unfortunately your device is currently not supported by BrightIntosh.")
-                                    },
-                                    icon: {
-                                        Image(systemName: "exclamationmark.triangle")
-                                    }
-                                )
-                            }
-                            .frame(maxWidth: .infinity)
-                            .translucentCard(backgroundColor: .yellow)
-                        }
-                        VStack(spacing: 10.0) {
-                            HStack(alignment: .center) {
-                                Spacer()
-                                Image(systemName: "1.circle")
-                                    .resizable()
-                                    .frame(width: 25.0, height: 25.0)
-                                    .foregroundColor(.brightintoshBlue)
-                                Spacer()
-                                Spacer()
-                                Image(systemName: "2.circle")
-                                    .resizable()
-                                    .frame(width: 25.0, height: 25.0)
-                                    .foregroundColor(.brightintoshBlue)
-                                Spacer()
-                                Spacer()
-                                Image(systemName: "3.circle")
-                                    .resizable()
-                                    .frame(width: 25.0, height: 25.0)
-                                    .foregroundColor(.brightintoshBlue)
-                                Spacer()
-                                
-                            }
-                            HStack(alignment: .top) {
-                                Spacer()
-                                Text("Click the \(Image(systemName: "sun.max.circle")) icon in your menu bar")
-                                    .multilineTextAlignment(.center)
-                                    .font(.title3)
-                                    .bold()
-                                    .frame(maxWidth: .infinity, alignment: .top)
-                                Spacer()
-                                Text("Click *Activate*")
-                                    .multilineTextAlignment(.center)
-                                    .font(.title3)
-                                    .bold()
-                                    .frame(maxWidth: .infinity, alignment: .top)
-                                Spacer()
-                                Text("Enjoy the extra brightness")
-                                    .multilineTextAlignment(.center)
-                                    .font(.title3)
-                                    .bold()
-                                    .frame(maxWidth: .infinity, alignment: .top)
-                                Spacer()
-                            }
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: 110.0)
-                        .translucentCard()
-                        if supportedDevice {
-                            Label(
-                                "BrightIntosh can shift your brightness range to higher values. The brightness slider in this app controls how much you shift this range. You can still use your brightness keys to control the brightness.",
-                                systemImage: "info.circle"
-                            )
-                            .frame(maxWidth: .infinity)
-                            .translucentCard()
-                            
-                            Label("You can also use the \(Image(systemName: "magnifyingglass")) Spotlight Search to open the settings window by searching \"BrightIntosh Settings\"",
-                                  systemImage: "info.circle")
-                            .frame(maxWidth: .infinity)
-                            .translucentCard()
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 10.0) {
-                            Text("Disclaimer")
-                                .bold()
-                                .font(.title3)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text("BrightIntosh is designed to be safe for your MacBook Pro and does not bypass the operating system's protections. BrightIntosh is open source software and therefore comes with no warranties, so use it at your own risk.")
-                                .lineLimit(nil)
-                        }
-                        .foregroundStyle(.black)
-                        .translucentCard()
-                    }
-                    .padding(20.0)
+        VStack(alignment: .leading, spacing: 22) {
+            HStack(spacing: 14) {
+                Image("LogoBorderedHighRes")
+                    .resizable()
+                    .frame(width: 56, height: 56)
+                    .aspectRatio(contentMode: .fit)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("BrightIntosh 本地版")
+                        .font(.title)
+                        .bold()
+                    Text("从菜单栏快速控制 XDR 增强亮度。")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            Button(action: onAccept) {
-                Text("Accept")
+
+            if !supportedDevice {
+                Label("这台 Mac 没有内建 XDR 显示屏，只能对外接 XDR 显示器启用增强亮度。", systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.yellow)
             }
-            .buttonStyle(BrightIntoshButtonStyle())
-            .padding(20.0)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Label("点击菜单栏的太阳图标开启或关闭增强亮度", systemImage: "sun.max")
+                Label("继续用系统亮度键调节基础亮度", systemImage: "keyboard")
+                Label("显示异常时，可在设置里恢复显示颜色设置", systemImage: "arrow.counterclockwise")
+            }
+            .font(.body)
+
+            Text("增强亮度会调用 macOS 显示接口提高 XDR 可用亮度。长时间高亮可能增加耗电和发热，请按实际环境使用。")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack {
+                Spacer()
+                Button("开始使用") {
+                    onAccept()
+                }
+                .keyboardShortcut(.defaultAction)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(28)
     }
 }
 
+#if STORE
 struct WelcomeStoreView: View {
     var onContinue: () -> Void
     var trial: TrialData
-    
+
     @Environment(\.isUnrestrictedUser) private var isUnrestrictedUser: Bool
-    
+
     var body: some View {
-        VStack {
-            VStack {
-                if !isUnrestrictedUser && !trial.stillEntitled() {
-                    Text("Your trial has expired")
-                        .font(.largeTitle)
-                        .bold()
-                } else {
-                    Text("Unleash the Brightness!")
-                        .font(.largeTitle)
-                        .bold()
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .translucentCard()
-            
-            VStack {
-                BrightIntoshStoreView(showLogo: false)
-            }
-            .frame(maxWidth: .infinity)
-            .translucentCard()
-            
-            Spacer()
-            
+        VStack(spacing: 16) {
+            Text(isUnrestrictedUser || trial.stillEntitled() ? "启用 BrightIntosh" : "试用已结束")
+                .font(.title)
+                .bold()
+
+            BrightIntoshStoreView(showLogo: false)
+
             if !isUnrestrictedUser && trial.stillEntitled() && trial.getRemainingDays() > 0 {
-                Button(action: onContinue) {
-                    Text("Start your free \(trial.getRemainingDays()) day trial")
-                }
-                .buttonStyle(BrightIntoshButtonStyle())
+                Button("开始 \(trial.getRemainingDays()) 天试用", action: onContinue)
+                    .keyboardShortcut(.defaultAction)
             } else if isUnrestrictedUser {
-                Button(action: onContinue) {
-                    Text("Activate")
-                }
-                .buttonStyle(BrightIntoshButtonStyle())
+                Button("启用", action: onContinue)
+                    .keyboardShortcut(.defaultAction)
             }
         }
+        .padding(28)
     }
 }
+#endif
 
 struct WelcomeView: View {
-    
     var supportedDevice: Bool = false
     var closeWindow: () -> Void
-    
+
     @State var showStore = false
-   
+
     @Environment(\.trial) private var trial: TrialData?
     @Environment(\.isUnrestrictedUser) private var isUnrestrictedUser: Bool
-    
+
     var body: some View {
-        VStack {
-            HStack {
-                Image("LogoBorderedHighRes")
-                    .resizable()
-                    .frame(width: 100, height: 100)
-                    .aspectRatio(contentMode: .fit)
-                Text("BrightIntosh")
-                    .font(.largeTitle)
-                    .foregroundColor(.brightintoshBlue)
-                    .bold()
-            }
+        Group {
             if !showStore {
                 IntroView(
-                    supportedDevice: supportedDevice, 
+                    supportedDevice: supportedDevice,
                     onAccept: {
 #if STORE
                         if isUnrestrictedUser {
@@ -200,61 +112,60 @@ struct WelcomeView: View {
 #endif
                     }
                 )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
+#if STORE
                 if let trial = trial {
                     WelcomeStoreView(onContinue: closeWindow, trial: trial)
                 } else {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+#else
+                EmptyView()
+#endif
             }
         }
-        .padding(20.0)
-        .background(LinearGradient.brightIntoshBackground)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.regularMaterial)
     }
 }
 
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView(closeWindow: {() in })
-            .frame(width: 580, height: 680)
+        WelcomeView(closeWindow: {})
+            .frame(width: 520, height: 420)
     }
 }
 
 final class WelcomeWindowController: NSWindowController, NSWindowDelegate {
     init(supportedDevice: Bool) {
-        
         let welcomeWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 580, height: 740),
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 420),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
-        welcomeWindow.title = "BrightIntosh Onboarding"
-        
-        let contentView = WelcomeView(supportedDevice: supportedDevice, closeWindow: welcomeWindow.close).frame(width: 550, height: 740)
+        welcomeWindow.title = "首次设置"
+
+        let contentView = WelcomeView(supportedDevice: supportedDevice, closeWindow: welcomeWindow.close)
+            .frame(width: 520, height: 420)
             .userStatusTask()
-        
+
         welcomeWindow.contentView = NSHostingView(rootView: contentView)
-        welcomeWindow.titlebarAppearsTransparent = true
-        welcomeWindow.titlebarSeparatorStyle = .none
-        welcomeWindow.titleVisibility = .hidden
-        welcomeWindow.styleMask = [.closable, .titled, .fullSizeContentView]
         welcomeWindow.center()
-        
+
         super.init(window: welcomeWindow)
         welcomeWindow.delegate = self
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func windowDidBecomeKey(_ notification: Notification) {
         window?.level = .statusBar
     }
-    
+
     func windowWillClose(_ notification: Notification) {
         NSApp.stopModal()
     }
