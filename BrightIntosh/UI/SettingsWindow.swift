@@ -6,6 +6,7 @@
 //
 
 import KeyboardShortcuts
+import CoreGraphics
 import OSLog
 import SwiftUI
 
@@ -263,6 +264,10 @@ struct BasicSettings: View {
                     )
                     .onChange(of: showIncompatibleAppsNotice) { _, new in
                         BrightIntoshSettings.shared.showIncompatibleAppsNotice = new
+                    }
+                    Button("Restore display color settings") {
+                        BrightIntoshSettings.shared.brightintoshActive = false
+                        CGDisplayRestoreColorSyncSettings()
                     }
                 }
                 Section(header: Text("Timer").bold()) {
