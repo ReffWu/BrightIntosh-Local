@@ -1,6 +1,7 @@
 xcuserdata
 *.pbxuser
 .DerivedData
+build/
 
 .vscode
 
