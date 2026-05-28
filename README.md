@@ -1,53 +1,84 @@
+# BrightIntosh Local
 
 <p align="center">
-  <img width="256" height="256" alt="BrightIntosh-iOS-Default-256x256@1x" src="https://github.com/user-attachments/assets/02136d9a-11e1-49f8-bd16-8c23fe02acfc" />
-</p>
-<p align="center">
-  <a href="https://www.brightintosh.de">View our website</a><br/><br/>
-  <a href="https://apps.apple.com/app/apple-store/id6452471855?pt=126521145&ct=github&mt=8" style="display: inline-block;">
-    <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1693267200" alt="Download on the App Store" style="width: 246px; height: 82px; vertical-align: middle; object-fit: contain;" />
-  </a>
+  <img width="180" height="180" alt="BrightIntosh Local app icon" src="docs/assets/app-icon.png">
 </p>
 
-# BrightIntosh
-
-BrightIntosh enables your MacBook Pro M1 (or newer) to use the increased brightness (1000 nits) of its XDR display at any time. By default, this is only possible when displaying HDR content.
-BrightIntosh can shift your brightness range to higher values.
-The brightness slider in the app controls how much you shift this range.
-You can still use your brightness keys to control the brightness.
-It comes with a handy menu bar item so you can toggle the increased brightness quickly and easily.
+BrightIntosh Local 是一个 macOS 菜单栏工具，用来在支持的 XDR 显示屏上快速开启或关闭增强亮度。本版本面向本地自用：去掉商店购买流程和营销入口，改为中文界面、本地构建、本地命令行控制。
 
 > [!IMPORTANT]
-> This tool should not harm your display as it doesn't use any low-level API calls and your OS is in full control over the display, but there is no warranty.
+> 长时间使用高亮度可能增加耗电和发热。请按实际环境使用；macOS 仍会控制显示系统的保护策略。
 
-## Preview
+## 功能
 
-<p align="center">
-  <img src="https://github.com/niklasr22/BrightIntosh/assets/75939868/b8774d5c-7bfa-4661-86d0-e0e58fefbdf1">
-</p>
+- 菜单栏一键开启/关闭增强亮度
+- 中文原生 macOS 设置窗口
+- 自动关闭定时器
+- 登录启动、电量、电源适配器和合盖自动化
+- 键盘快捷键
+- 本地 CLI：`brightintosh status`、`brightintosh enable`、`brightintosh disable`、`brightintosh toggle`
+- 诊断报告复制和显示颜色设置恢复
 
-Maximum brightness with BrightIntosh on the left half of the picture, default maximum brightness on the right half.
+## 支持设备
 
-## Compatible devices
-
-- MacBook Pro M5 from 2025 / 2026 (Model identifier: Mac17,2, Mac17,6, Mac17,7, Mac17,8, Mac17,9) 
-- MacBook Pro M4 from 2024 (Model Identifiers: Mac16,1, Mac16,5, Mac16,6, Mac16,7, Mac16,8)
-- MacBook Pro M3 from 2023 (Model Identifiers: Mac15,3, Mac15,6, Mac15,7, Mac15,8, Mac15,9, Mac15,10, Mac15,11)
-- MacBook Pro M2 14" / 16" from 2023 (Model Identifiers: Mac14,5, Mac14,6, Mac14,9, Mac14,10)
-- MacBook Pro M1 14" / 16" from 2021 (Model Identifiers: MacBookPro18,1, MacBookPro18,2, MacBookPro18,3, MacBookPro18,4)
-- Studio Display XDR (experimental)
+- MacBook Pro M5 from 2025 / 2026: `Mac17,2`, `Mac17,6`, `Mac17,7`, `Mac17,8`, `Mac17,9`
+- MacBook Pro M4 from 2024: `Mac16,1`, `Mac16,5`, `Mac16,6`, `Mac16,7`, `Mac16,8`
+- MacBook Pro M3 from 2023: `Mac15,3`, `Mac15,6`, `Mac15,7`, `Mac15,8`, `Mac15,9`, `Mac15,10`, `Mac15,11`
+- MacBook Pro M2 14" / 16" from 2023: `Mac14,5`, `Mac14,6`, `Mac14,9`, `Mac14,10`
+- MacBook Pro M1 14" / 16" from 2021: `MacBookPro18,1`, `MacBookPro18,2`, `MacBookPro18,3`, `MacBookPro18,4`
 - Pro Display XDR
+- Studio Display XDR experimental
 
-## Installation
+## 构建和安装
 
-- [Mac App Store](https://apple.co/3r0Ghqm)
-- 👩🏼‍💻 Build it yourself 👨🏽‍💻
+需要 macOS 和完整 Xcode。
 
-## Contributing
+```sh
+./scripts/build-local.sh
+```
 
-If you have any ideas, enhancements or proposals, feel free to open an issue!
+脚本会执行 Release 构建、ad-hoc 签名，并安装到：
 
-## Known incompatibilities and problems:
+```text
+/Applications/BrightIntosh.app
+```
 
-- BrightIntosh and [f.lux](https://justgetflux.com) will likely not work simultaneously
-- HDR Videos will clip when BrightIntosh is active
+安装后打开 App：
+
+```sh
+open /Applications/BrightIntosh.app
+```
+
+## 命令行工具
+
+在 App 的“设置 -> 本地工具 -> 安装命令行工具...”中复制安装命令。安装后可使用：
+
+```sh
+brightintosh status
+brightintosh enable
+brightintosh disable
+brightintosh toggle
+brightintosh help
+```
+
+CLI 需要主 App 正在运行。
+
+## 本地版改动
+
+- Bundle ID 改为 `local.reff.brightintosh`
+- App Group 改为 `group.local.reff.brightintosh`
+- 默认不自动开启增强亮度
+- 去掉主要 UI 中的商店、官网、帮助、社交和作者营销入口
+- 设置窗口、菜单栏、首次启动页、提示和 CLI 文案改为中文
+- CLI 和小组件通过分布式通知同步运行中的主 App
+- 本地诊断报告跳过 StoreKit 检查
+
+## 许可和来源
+
+本项目基于 [niklasr22/BrightIntosh](https://github.com/niklasr22/BrightIntosh) 修改，继续遵循原项目的 GPL-3.0 license。原始版权和许可证见 [LICENSE](LICENSE)。
+
+## 已知问题
+
+- BrightIntosh 与 f.lux 等也会调节显示器亮度或颜色的 App 可能互相影响
+- 开启增强亮度时，部分 HDR 视频可能出现高光裁剪
+- 本地构建使用 ad-hoc 签名，不等同于 App Store 分发版本

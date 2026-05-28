@@ -1,17 +1,17 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an improvement for BrightIntosh Local
 title: ''
-labels: ''
+labels: enhancement
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**想解决什么问题？**
+请简要说明这个建议对应的使用场景。
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**希望怎么改？**
+请说明你期待的行为或界面。
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**补充信息**
+可以附截图、系统版本、设备型号或其他背景。

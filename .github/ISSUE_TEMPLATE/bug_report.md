@@ -1,19 +1,24 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a problem with BrightIntosh Local
 title: ''
 labels: bug
-assignees: niklasr22
+assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**问题描述**
+请简要说明遇到的问题。
 
 **BrightIntosh Report**
 ```
-Paste the contents copied with the *Generate and copy report* button in the BrightIntosh settings.
+请粘贴“设置 -> 本地工具 -> 复制诊断报告”生成的内容。
 ```
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**复现步骤**
+1. 
+2. 
+3. 
+
+**截图**
+如果方便，请附上截图。
