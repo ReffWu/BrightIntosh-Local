@@ -32,6 +32,7 @@ class BrightIntoshSettings {
     public var brightintoshActive: Bool = BrightIntoshSettings.getUserDefault(key: "active", defaultValue: false) {
         didSet {
             BrightIntoshSettings.defaults.setValue(brightintoshActive, forKey: "active")
+            BrightIntoshSettings.defaults.synchronize()
             callListeners(setting: "brightintoshActive")
         }
     }

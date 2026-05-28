@@ -23,6 +23,7 @@ class BrightIntoshAppDelegate: NSObject {
     private var automationManager: AutomationManager?
     private var incompatibleAppsMonitor: IncompatibleAppsMonitor?
     private var hdrCooldownNoticeMonitor: HDRCooldownNoticeMonitor?
+    private var controlActiveObserver: NSObjectProtocol?
     private var supportedDevice: Bool = false
     
     func addKeyListeners() {
@@ -73,6 +74,28 @@ class BrightIntoshAppDelegate: NSObject {
             }
         }
     }
+
+    func addControlToggleListener() {
+        controlActiveObserver = DistributedNotificationCenter.default().addObserver(
+            forName: controlActiveToggleNotificationName,
+            object: nil,
+            queue: .main
+        ) { notification in
+            Task { @MainActor in
+                let activeValue = notification.userInfo?["active"]
+                let active: Bool?
+                if let boolValue = activeValue as? Bool {
+                    active = boolValue
+                } else if let numberValue = activeValue as? NSNumber {
+                    active = numberValue.boolValue
+                } else {
+                    active = nil
+                }
+                guard let active else { return }
+                BrightIntoshSettings.shared.brightintoshActive = active
+            }
+        }
+    }
 }
 
 extension BrightIntoshAppDelegate: NSApplicationDelegate {
@@ -116,6 +139,7 @@ extension BrightIntoshAppDelegate: NSApplicationDelegate {
         
         // Register global hotkeys
         addKeyListeners()
+        addControlToggleListener()
         
         BrightIntoshSettings.shared.addListener(setting: "brightintoshActive") {
 #if swift(>=6.2)

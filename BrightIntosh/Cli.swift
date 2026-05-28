@@ -8,10 +8,12 @@ import Foundation
 
 @MainActor func toggleCli() {
     BrightIntoshSettings.shared.brightintoshActive.toggle()
+    notifyMainApp(active: BrightIntoshSettings.shared.brightintoshActive)
 }
 
 @MainActor func setActiveStateCli(active: Bool) {
     BrightIntoshSettings.shared.brightintoshActive = active
+    notifyMainApp(active: active)
 }
 
 @MainActor func statusCli() {
@@ -47,6 +49,15 @@ Commands:
 
 func helpCli() {
     print(getHelpText())
+}
+
+func notifyMainApp(active: Bool) {
+    DistributedNotificationCenter.default().postNotificationName(
+        controlActiveToggleNotificationName,
+        object: nil,
+        userInfo: ["active": active],
+        deliverImmediately: true
+    )
 }
 
 @MainActor func cliBase() -> Bool {

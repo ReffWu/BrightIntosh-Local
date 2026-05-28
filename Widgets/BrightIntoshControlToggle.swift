@@ -51,9 +51,14 @@ struct ToggleBrightIntoshIntent: SetValueIntent {
     var value: Bool
 
     func perform() async throws -> some IntentResult {
-        // Trigger main app via distributed notification; handled in AppDelegate
-        //DistributedNotificationCenter.default().postNotificationName(controlActiveToggleNotificationName, object: nil, userInfo: nil, deliverImmediately: true)
         UserDefaults(suiteName: defaultsSuiteName)!.setValue(value, forKey: "active")
+        UserDefaults(suiteName: defaultsSuiteName)!.synchronize()
+        DistributedNotificationCenter.default().postNotificationName(
+            controlActiveToggleNotificationName,
+            object: nil,
+            userInfo: ["active": value],
+            deliverImmediately: true
+        )
         return .result()
     }
 }
