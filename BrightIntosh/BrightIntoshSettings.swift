@@ -29,7 +29,7 @@ class BrightIntoshSettings {
         return defaultValue
     }
 
-    public var brightintoshActive: Bool = BrightIntoshSettings.getUserDefault(key: "active", defaultValue: true) {
+    public var brightintoshActive: Bool = BrightIntoshSettings.getUserDefault(key: "active", defaultValue: false) {
         didSet {
             BrightIntoshSettings.defaults.setValue(brightintoshActive, forKey: "active")
             callListeners(setting: "brightintoshActive")
@@ -173,7 +173,7 @@ class BrightIntoshSettings {
     }
     
     private func refreshState() {
-        brightintoshActive = BrightIntoshSettings.getUserDefault(key: "active", defaultValue: true)
+        brightintoshActive = BrightIntoshSettings.getUserDefault(key: "active", defaultValue: false)
         brightIntoshOnlyOnBuiltIn = BrightIntoshSettings.getUserDefault(key: "brightIntoshOnlyOnBuiltIn", defaultValue: false)
         disableWhenLidClosed = BrightIntoshSettings.getUserDefault(key: "disableWhenLidClosed", defaultValue: false)
         showHDRRetryCooldownNotice = BrightIntoshSettings.getUserDefault(key: "showHDRRetryCooldownNotice", defaultValue: true)

@@ -7,6 +7,6 @@
 
 import Foundation
 
-let defaultsSuiteName = "group.de.brightintosh.app"
-let brightintoshActiveControlKind = "de.brightintosh.app.Widgets.Toggle"
+let defaultsSuiteName = "group.local.reff.brightintosh"
+let brightintoshActiveControlKind = "local.reff.brightintosh.Widgets.Toggle"
 let controlActiveToggleNotificationName = Notification.Name("de.brightintosh.intent.setActive")

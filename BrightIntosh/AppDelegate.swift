@@ -63,7 +63,7 @@ class BrightIntoshAppDelegate: NSObject {
         attributeSet.thumbnailData = URL(string: "https://brightintosh.de/brightintosh_sm.png")!.dataRepresentation
         attributeSet.alternateNames = ["BrightIntosh Settings", "BrightIntosh", "Settings", "brightness"]
 
-        let item = CSSearchableItem(uniqueIdentifier: "de.brightintosh.app.settings", domainIdentifier: "de.brightintosh.app", attributeSet: attributeSet)
+        let item = CSSearchableItem(uniqueIdentifier: "local.reff.brightintosh.settings", domainIdentifier: "local.reff.brightintosh", attributeSet: attributeSet)
         
         Task {
             do {
@@ -84,7 +84,7 @@ extension BrightIntoshAppDelegate: NSApplicationDelegate {
     ) -> Bool {
         if userActivity.activityType == CSSearchableItemActionType,
            let uniqueIdentifier = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String {
-            if uniqueIdentifier == "de.brightintosh.app.settings" {
+            if uniqueIdentifier == "local.reff.brightintosh.settings" {
                 self.showSettingsWindow()
                 return true
             }
