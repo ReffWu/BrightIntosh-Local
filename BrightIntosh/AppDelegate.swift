@@ -81,16 +81,17 @@ class BrightIntoshAppDelegate: NSObject {
             object: nil,
             queue: .main
         ) { notification in
+            let activeValue = notification.userInfo?["active"]
+            let active: Bool?
+            if let boolValue = activeValue as? Bool {
+                active = boolValue
+            } else if let numberValue = activeValue as? NSNumber {
+                active = numberValue.boolValue
+            } else {
+                active = nil
+            }
+
             Task { @MainActor in
-                let activeValue = notification.userInfo?["active"]
-                let active: Bool?
-                if let boolValue = activeValue as? Bool {
-                    active = boolValue
-                } else if let numberValue = activeValue as? NSNumber {
-                    active = numberValue.boolValue
-                } else {
-                    active = nil
-                }
                 guard let active else { return }
                 BrightIntoshSettings.shared.brightintoshActive = active
             }
