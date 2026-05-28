@@ -292,6 +292,7 @@ func generateReport() async -> String {
         report += "Version: BrightIntosh v\(appVersion)\n"
     #endif
     report += "Model Identifier: \(getModelIdentifier() ?? "N/A")\n"
+#if STORE
     do {
         if let sharedAppTransaction = try await (withTimeout(seconds: timeoutSeconds) {
             try await getAppTransaction()
@@ -334,6 +335,9 @@ func generateReport() async -> String {
     } catch {
         report += "Error: Trial Data could not be fetched \(error.localizedDescription)\n"
     }
+#else
+    report += "Authorization: Local edition unrestricted\n"
+#endif
     
     let incompatibleApps = await MainActor.run {
         runningIncompatibleApps()
